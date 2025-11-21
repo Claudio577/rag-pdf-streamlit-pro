@@ -11,6 +11,8 @@ def load_and_index_pdfs(uploaded_files):
 
     for pdf in uploaded_files:
         temp_path = f"temp_{pdf.name}"
+
+        # grava o PDF temporariamente
         with open(temp_path, "wb") as f:
             f.write(pdf.getbuffer())
 
@@ -31,6 +33,8 @@ def load_and_index_pdfs(uploaded_files):
             d.metadata["pdf_name"] = pdf.name
 
         all_docs.extend(docs)
-        os.remove(temp_path)
+
+        # ❗❗❗ REMOVIDO: não apagar o arquivo no Streamlit Cloud
+        # os.remove(temp_path)
 
     return build_vectorstore(all_docs)
