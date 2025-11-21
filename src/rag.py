@@ -5,6 +5,8 @@ def process_query(query, vectorstore):
     """Executa RAG completo: busca + geração."""
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
+
+    # CORRIGIDO: não usar "query: " aqui
     docs = retriever.get_relevant_documents(query)
 
     contexto = ""
