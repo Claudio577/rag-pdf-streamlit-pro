@@ -1,28 +1,28 @@
+import tempfile
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from src.preprocess import remove_governo_headers, clean_text_block
 from src.vectorstore import build_vectorstore
-import tempfile
 
 def load_and_index_pdfs(uploaded_files):
-    """Carrega, limpa e indexa PDFs usando byte-stream (compatível com Streamlit Cloud)."""
+    """Carrega PDFs em memória e cria um vectorstore FAISS seguro."""
 
     all_docs = []
 
     for pdf in uploaded_files:
-        # Criar arquivo temporário seguro
+        # Criar arquivo temp
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             tmp.write(pdf.getbuffer())
             temp_path = tmp.name
 
         loader = PyPDFLoader(temp_path)
-        docs = loader.load()
+        raw_docs = loader.load()
 
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=800,
             chunk_overlap=120
         )
-        docs = splitter.split_documents(docs)
+        docs = splitter.split_documents(raw_docs)
 
         for d in docs:
             texto = remove_governo_headers(d.page_content)
@@ -32,9 +32,8 @@ def load_and_index_pdfs(uploaded_files):
 
         all_docs.extend(docs)
 
-    # Garantir que exista conteúdo
     if not all_docs:
-        raise ValueError("Nenhum conteúdo foi extraído dos PDFs. Verifique o arquivo enviado.")
+        raise ValueError("Nenhum texto foi extraído. PDF está vazio ou inválido.")
 
     return build_vectorstore(all_docs)
 
