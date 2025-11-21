@@ -71,13 +71,44 @@ if uploaded_files is not None and len(uploaded_files) > 0:
 st.markdown("---")
 
 
-# ============================
-# CAMPO DE PERGUNTA
-# ============================
+# ==========================================================
+# PERGUNTA OU RESUMO
+# ==========================================================
+
 pergunta = st.text_input("🔎 Pergunta sobre os PDFs:")
 
-# Checkbox para resumo completo
-fazer_resumo = st.checkbox("Fazer resumo completo do PDF")
+# Se o usuário digitou pergunta → mostrar apenas "Enviar pergunta"
+if pergunta.strip():
+    if st.button("Enviar pergunta"):
+        if not st.session_state.vectorstore:
+            st.error("Nenhum PDF carregado.")
+        else:
+            resposta, fontes = process_query(pergunta, st.session_state.vectorstore)
+
+            st.subheader("🧠 Resposta")
+            st.write(resposta)
+
+            st.subheader("📌 Fontes utilizadas")
+            for f in fontes:
+                st.write(f"**{f['pdf']}**")
+                st.write(f["texto"] + "\n---")
+
+# Se o usuário NÃO digitou pergunta → mostrar botão de resumo
+else:
+    if st.button("📄 Fazer resumo completo do PDF"):
+        if not st.session_state.vectorstore:
+            st.error("Nenhum PDF carregado.")
+        else:
+            resposta, fontes = process_query("RESUMO_COMPLETO_PDF", st.session_state.vectorstore)
+
+            st.subheader("🧠 Resumo do PDF")
+            st.write(resposta)
+
+            st.subheader("📌 Fontes utilizadas")
+            for f in fontes:
+                st.write(f"**{f['pdf']}**")
+                st.write(f["texto"] + "\n---")
+
 
 
 # ============================
