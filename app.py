@@ -6,8 +6,12 @@ st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
 st.title("📄 RAG PDF Pro — Perguntas e respostas em PDFs com IA")
 
+# Estado inicial
 if "vectorstore" not in st.session_state:
     st.session_state.vectorstore = None
+
+if "pdf_bytes" not in st.session_state:
+    st.session_state.pdf_bytes = []
 
 # Sidebar ---------------------------------------------------
 st.sidebar.header("📁 Carregar PDFs")
@@ -18,9 +22,16 @@ uploaded_files = st.sidebar.file_uploader(
     accept_multiple_files=True
 )
 
-if uploaded_files:
+# -----------------------------------------------------------
+# Upload só processa quando realmente há arquivos
+# -----------------------------------------------------------
+if uploaded_files is not None and len(uploaded_files) > 0:
+
+    # Guardar PDF como BYTES, não objetos Streamlit
+    st.session_state.pdf_bytes = [f.getvalue() for f in uploaded_files]
+
     with st.spinner("Processando e indexando PDFs..."):
-        st.session_state.vectorstore = load_and_index_pdfs(uploaded_files)
+        st.session_state.vectorstore = load_and_index_pdfs(st.session_state.pdf_bytes)
 
     st.success("PDFs processados com sucesso!")
 
