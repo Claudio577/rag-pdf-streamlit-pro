@@ -2,6 +2,9 @@ from src.llm import get_llm
 from langchain_core.messages import HumanMessage
 
 def process_query(query, vectorstore):
+# Detecta comando de resumo completo
+if query == "RESUMO_COMPLETO_PDF":
+    query = "Faça um resumo completo, detalhado, organizado e fiel ao PDF inteiro."
 
     if vectorstore is None:
         raise ValueError("Vectorstore está vazio. Nenhum PDF foi indexado.")
