@@ -5,7 +5,7 @@ from src.rag import process_query
 st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
 st.markdown("""
-### O que este sistema faz
+### 📘 O que este sistema faz
 
 Este aplicativo utiliza **Inteligência Artificial + LangChain moderno** para analisar PDFs e responder perguntas com base no conteúdo real dos documentos.
 
@@ -30,11 +30,9 @@ Ideal para trabalhar com:
 - Regimentos  
 - Normas administrativas  
 
-Use o campo de perguntas para dúvidas específicas ou ative  
-**“Fazer resumo completo do PDF”** para gerar uma análise completa.
+Use o campo de perguntas para dúvidas específicas ou clique em  
+**“Resumo completo do PDF”** para gerar uma análise completa.
 """)
-
-
 
 # ============================
 # ESTADO INICIAL
@@ -57,10 +55,8 @@ uploaded_files = st.sidebar.file_uploader(
     accept_multiple_files=True
 )
 
-# Processar PDFs somente quando realmente houver arquivos
 if uploaded_files is not None and len(uploaded_files) > 0:
 
-    # Guardar conteúdo dos PDFs como bytes
     st.session_state.pdf_bytes = [f.getvalue() for f in uploaded_files]
 
     with st.spinner("Processando e indexando PDFs..."):
@@ -70,15 +66,15 @@ if uploaded_files is not None and len(uploaded_files) > 0:
 
 st.markdown("---")
 
-
 # ==========================================================
 # PERGUNTA OU RESUMO
 # ==========================================================
 
 pergunta = st.text_input("🔎 Pergunta sobre os PDFs:")
 
-# Se o usuário digitou pergunta → mostrar apenas "Enviar pergunta"
+# Se o usuário DIGITOU uma pergunta → mostrar botão de pergunta
 if pergunta.strip():
+
     if st.button("Enviar pergunta"):
         if not st.session_state.vectorstore:
             st.error("Nenhum PDF carregado.")
@@ -93,9 +89,10 @@ if pergunta.strip():
                 st.write(f"**{f['pdf']}**")
                 st.write(f["texto"] + "\n---")
 
-# Se o usuário NÃO digitou pergunta → mostrar botão de resumo
+# Se o usuário NÃO digitou → mostrar botão de resumo
 else:
-    if st.button("📄 Fazer resumo completo do PDF"):
+
+    if st.button("📄 Resumo completo do PDF"):
         if not st.session_state.vectorstore:
             st.error("Nenhum PDF carregado.")
         else:
@@ -108,34 +105,3 @@ else:
             for f in fontes:
                 st.write(f"**{f['pdf']}**")
                 st.write(f["texto"] + "\n---")
-
-
-
-# ============================
-# EXECUTAR CONSULTA
-# ============================
-if st.button("Enviar pergunta"):
-    if not st.session_state.vectorstore:
-        st.error("Nenhum PDF carregado.")
-    else:
-
-        # Caso o usuário queira resumo completo
-        if fazer_resumo:
-            pergunta = (
-                "Faça um resumo completo, detalhado e estruturado do PDF inteiro, "
-                "destacando objetivos, contexto legal, regras, obrigações, prazos, "
-                "responsabilidades e os principais pontos tratados no documento."
-            )
-
-        # Executar RAG
-        resposta, fontes = process_query(pergunta, st.session_state.vectorstore)
-
-        # Mostrar resposta
-        st.subheader("🧠 Resposta")
-        st.write(resposta)
-
-        # Mostrar trechos usados
-        st.subheader("📌 Fontes utilizadas")
-        for f in fontes:
-            st.write(f"**{f['pdf']}**")
-            st.write(f["texto"] + "\n---")
