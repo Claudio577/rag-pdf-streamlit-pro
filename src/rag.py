@@ -2,13 +2,22 @@ from src.llm import get_llm
 from langchain_core.messages import HumanMessage
 
 def process_query(query, vectorstore):
-# Detecta comando de resumo completo
-if query == "RESUMO_COMPLETO_PDF":
-    query = "Faça um resumo completo, detalhado, organizado e fiel ao PDF inteiro."
 
+    # ---------------------------------------------------------
+    # Detecta comando de resumo completo
+    # ---------------------------------------------------------
+    if query == "RESUMO_COMPLETO_PDF":
+        query = "Faça um resumo completo, detalhado, organizado e fiel ao PDF inteiro."
+
+    # ---------------------------------------------------------
+    # Verifica se a base está carregada
+    # ---------------------------------------------------------
     if vectorstore is None:
         raise ValueError("Vectorstore está vazio. Nenhum PDF foi indexado.")
 
+    # ---------------------------------------------------------
+    # Configuração do retriever (MMR + busca larga)
+    # ---------------------------------------------------------
     retriever = vectorstore.as_retriever(
         search_kwargs={
             "k": 15,
@@ -17,7 +26,9 @@ if query == "RESUMO_COMPLETO_PDF":
         }
     )
 
-    # Usa o método correto do LangChain moderno
+    # ---------------------------------------------------------
+    # Busca dos documentos
+    # ---------------------------------------------------------
     try:
         docs = retriever.invoke(query)
     except Exception as e:
@@ -26,6 +37,9 @@ if query == "RESUMO_COMPLETO_PDF":
     if not docs:
         return "Nenhuma resposta encontrada nos PDFs.", []
 
+    # ---------------------------------------------------------
+    # Montagem do contexto
+    # ---------------------------------------------------------
     contexto = ""
     fontes = []
 
@@ -36,11 +50,13 @@ if query == "RESUMO_COMPLETO_PDF":
         contexto += f"\n\n[PDF: {pdf}]\n{texto}"
         fontes.append({"pdf": pdf, "texto": texto})
 
-    # PROMPT PROFISSIONAL
+    # ---------------------------------------------------------
+    # PROMPT PROFISSIONAL RAG
+    # ---------------------------------------------------------
     prompt = f"""
 Você é um assistente RAG especializado em leitura de documentos oficiais, jurídicos e administrativos.
 
-Use APENAS os trechos fornecidos no CONTEXTO para responder.  
+Use APENAS os trechos fornecidos no CONTEXTO para responder.
 No entanto, você pode:
 
 - Resumir o conteúdo
@@ -64,5 +80,8 @@ IMPORTANTE:
 ### SUA RESPOSTA (clara, completa e baseada nos trechos acima):
 """
 
+    # ---------------------------------------------------------
+    # Chama o LLM
+    # ---------------------------------------------------------
     resposta = get_llm().invoke([HumanMessage(content=prompt)])
     return resposta.content, fontes
