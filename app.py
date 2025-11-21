@@ -82,7 +82,6 @@ Este sistema usa **RAG + LangChain moderno** para analisar seus PDFs e fornecer:
 
 - Resumo completo do documento  
 - Respostas exatas baseadas no conteúdo real  
-- Zero alucinação  
 - Busca de alta precisão  
 
 Ideal para portarias, resoluções, leis, contratos e documentos oficiais.
