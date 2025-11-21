@@ -30,7 +30,7 @@ if "pdf_bytes" not in st.session_state:
 # ============================
 # SIDEBAR — UPLOAD
 # ============================
-st.sidebar.header("📁 Carregar PDFs")
+st.sidebar.header("Carregar PDFs")
 
 uploaded_files = st.sidebar.file_uploader(
     "Envie um ou vários PDFs",
@@ -58,7 +58,7 @@ st.markdown("---")
 pergunta = st.text_input("🔎 Pergunta sobre os PDFs:")
 
 # Checkbox para resumo completo
-fazer_resumo = st.checkbox("📄 Fazer resumo completo do PDF")
+fazer_resumo = st.checkbox("Fazer resumo completo do PDF")
 
 
 # ============================
