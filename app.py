@@ -5,7 +5,7 @@ from src.rag import process_query
 st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
 # -------------------------------------------------------
-# ESTILOS (deixa tudo mais bonito)
+# ESTILIZAÇÃO
 # -------------------------------------------------------
 st.markdown("""
 <style>
@@ -33,9 +33,13 @@ if "pdf_bytes" not in st.session_state:
 if "resumo_pdf" not in st.session_state:
     st.session_state.resumo_pdf = None
 
+# controla se o resumo está aberto na tela
+if "mostrar_resumo" not in st.session_state:
+    st.session_state.mostrar_resumo = False
+
 
 # -------------------------------------------------------
-# SIDEBAR
+# SIDEBAR — UPLOAD
 # -------------------------------------------------------
 st.sidebar.header("📁 Carregar PDFs")
 
@@ -55,38 +59,41 @@ if uploaded_files:
 
 st.sidebar.markdown("---")
 
-# BOTÃO RESUMO COMPLETO
+
+# -------------------------------------------------------
+# BOTÃO DE RESUMO COMPLETO DO PDF (FICA NA SIDEBAR)
+# -------------------------------------------------------
 if st.sidebar.button("📄 Gerar resumo completo do PDF"):
     if not st.session_state.vectorstore:
         st.sidebar.error("Nenhum PDF carregado.")
     else:
         resumo, fontes = process_query("RESUMO_COMPLETO_PDF", st.session_state.vectorstore)
         st.session_state.resumo_pdf = (resumo, fontes)
+        st.session_state.mostrar_resumo = True
+
 
 # -------------------------------------------------------
-# ÁREA PRINCIPAL
+# ÁREA PRINCIPAL — TÍTULO E EXPLICAÇÃO
 # -------------------------------------------------------
-
 st.markdown("<div class='main-title'>📄 RAG PDF Pro — Perguntas e Respostas Inteligentes</div>", unsafe_allow_html=True)
 
-# Explicação
 st.markdown("""
-Este sistema usa **RAG + LangChain moderno** para analisar PDFs
-e responder perguntas com total precisão, sem inventar informações.
+Este sistema usa **RAG + LangChain moderno** para analisar seus PDFs e fornecer:
 
-Ideal para:
-- Portarias  
-- Resoluções  
-- Leis  
-- Documentos técnicos  
-- Contratos  
-- Regimentos  
+- Resumo completo do documento  
+- Respostas exatas baseadas no conteúdo real  
+- Zero alucinação  
+- Busca de alta precisão  
+
+Ideal para portarias, resoluções, leis, contratos e documentos oficiais.
 """)
 
+
 # -------------------------------------------------------
-# MOSTRAR RESUMO (SE EXISTIR)
+# MOSTRAR O RESUMO (SE EXISTE E ESTÁ ABERTO)
 # -------------------------------------------------------
-if st.session_state.resumo_pdf:
+if st.session_state.resumo_pdf and st.session_state.mostrar_resumo:
+
     resumo, fontes = st.session_state.resumo_pdf
 
     st.markdown("<div class='section-title'>📘 Resumo completo do PDF</div>", unsafe_allow_html=True)
@@ -99,10 +106,16 @@ if st.session_state.resumo_pdf:
         <div class='response-box'>{f['texto']}</div>
         """, unsafe_allow_html=True)
 
-    st.markdown("---")
+    # BOTÃO DE FECHAR RESUMO
+    if st.button("Fechar resumo"):
+        st.session_state.mostrar_resumo = False
+
+
+st.markdown("---")
+
 
 # -------------------------------------------------------
-# PERGUNTA
+# PERGUNTA NORMAL
 # -------------------------------------------------------
 st.markdown("<div class='section-title'>🔎 Pergunta sobre os PDFs</div>", unsafe_allow_html=True)
 pergunta = st.text_input("Digite sua pergunta:")
