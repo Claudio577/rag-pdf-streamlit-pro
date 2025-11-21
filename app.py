@@ -5,7 +5,7 @@ from src.rag import process_query
 st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
 # ============================
-# DESCRIÇÃO DO SISTEMA
+# DESCRIÇÃO
 # ============================
 
 st.markdown("""
@@ -13,17 +13,17 @@ st.markdown("""
 
 Este aplicativo utiliza **Inteligência Artificial + LangChain moderno** para analisar PDFs e responder perguntas com base no conteúdo real dos documentos.
 
-Ele é construído com **RAG profissional**, utilizando:
-- FAISS + embeddings → busca inteligente  
-- GPT-4o-mini → respostas contextualizadas  
-- LangChain moderno → pipeline atualizado  
-- Resumo completo do PDF com 1 clique  
+Ele utiliza:
+- FAISS + embeddings
+- GPT-4o-mini
+- RAG profissional
+- Resumo completo do PDF com 1 clique
 
-Este sistema **não inventa informações**: responde somente com base no conteúdo do PDF.
+Ele **não inventa informações**: responde somente com base no PDF carregado.
 """)
 
 # ============================
-# ESTADO INICIAL
+# ESTADO
 # ============================
 
 if "vectorstore" not in st.session_state:
@@ -32,8 +32,12 @@ if "vectorstore" not in st.session_state:
 if "pdf_bytes" not in st.session_state:
     st.session_state.pdf_bytes = []
 
+if "resumo_pdf" not in st.session_state:
+    st.session_state.resumo_pdf = None
+
+
 # ============================
-# SIDEBAR — UPLOAD + RESUMO
+# UPLOAD
 # ============================
 
 st.sidebar.header("📁 Carregar PDFs")
@@ -44,9 +48,7 @@ uploaded_files = st.sidebar.file_uploader(
     accept_multiple_files=True
 )
 
-# Processar PDFs
-if uploaded_files is not None and len(uploaded_files) > 0:
-
+if uploaded_files:
     st.session_state.pdf_bytes = [f.getvalue() for f in uploaded_files]
 
     with st.spinner("Processando e indexando PDFs..."):
@@ -55,21 +57,34 @@ if uploaded_files is not None and len(uploaded_files) > 0:
     st.success("PDFs processados com sucesso!")
 
 
-# 🔽 BOTÃO DE RESUMO COMPLETO (NA SIDEBAR)
+# ============================
+# BOTÃO DE RESUMO COMPLETO
+# ============================
+
 st.sidebar.markdown("---")
 if st.sidebar.button("📄 Gerar resumo completo do PDF"):
     if not st.session_state.vectorstore:
         st.sidebar.error("Nenhum PDF carregado.")
     else:
         resumo, fontes = process_query("RESUMO_COMPLETO_PDF", st.session_state.vectorstore)
+        st.session_state.resumo_pdf = (resumo, fontes)
 
-        st.subheader("🧠 Resumo completo do PDF")
-        st.write(resumo)
 
-        st.subheader("📌 Fontes utilizadas")
-        for f in fontes:
-            st.write(f"**{f['pdf']}**")
-            st.write(f["texto"] + "\n---")
+# ============================
+# MOSTRAR RESUMO LOGO ABAIXO DO BOTÃO
+# ============================
+
+if st.session_state.resumo_pdf:
+    resumo, fontes = st.session_state.resumo_pdf
+
+    st.subheader("🧠 Resumo completo do PDF")
+    st.write(resumo)
+
+    st.subheader("📌 Fontes utilizadas")
+    for f in fontes:
+        st.write(f"**{f['pdf']}**")
+        st.write(f["texto"] + "\n---")
+
 
 # ============================
 # PERGUNTA NORMAL
