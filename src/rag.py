@@ -34,32 +34,33 @@ def process_query(query, vectorstore):
         contexto += f"\n\n[PDF: {pdf}]\n{texto}"
         fontes.append({"pdf": pdf, "texto": texto})
 
-    # -------------------------------
-    # PROMPT CORRIGIDO — ESSENCIAL
-    # -------------------------------
-    prompt = f"""
-Você é um assistente RAG. Use APENAS o conteúdo dos PDFs abaixo
-para responder à pergunta do usuário.
+   prompt = f"""
+Você é um assistente RAG especializado em leitura de documentos oficiais, jurídicos e administrativos.
 
-Você pode:
+Use APENAS os trechos fornecidos no CONTEXTO para responder.  
+No entanto, você pode:
+
 - Resumir o conteúdo
-- Reescrever com outras palavras
-- Explicar do que o PDF trata
-- Extrair ideias principais
-- Sintetizar informações do texto
+- Explicar com outras palavras
+- Inferir o tema geral a partir dos trechos
+- Unificar informações de diferentes partes do PDF
+- Estruturar a resposta de forma clara e organizada
+- Destacar objetivos, regras, obrigações, prazos e responsabilidades
 
-NÃO diga "Não encontrei essa informação" se o PDF contiver qualquer fato relacionado.
+IMPORTANTE:
+❗ Não responda "não encontrei" se houver QUALQUER trecho relacionado ao tema.  
+❗ Só diga "não encontrei essa informação nos PDFs" se realmente não existir nada útil no contexto.  
+❗ Nunca invente informações fora dos trechos fornecidos.
 
-Apenas diga isso caso REALMENTE não exista nada no contexto que ajude.
-
-### CONTEXTO (trechos dos PDFs):
+### CONTEXTO (trechos reais do PDF):
 {contexto}
 
-### PERGUNTA:
+### PERGUNTA DO USUÁRIO:
 {query}
 
-### RESPOSTA:
+### SUA RESPOSTA (clara, completa e baseada nos trechos acima):
 """
+
     # -------------------------------
 
     resposta = get_llm().invoke([HumanMessage(content=prompt)])
