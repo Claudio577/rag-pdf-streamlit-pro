@@ -7,12 +7,12 @@ def process_query(query, vectorstore):
         raise ValueError("Vectorstore está vazio. Nenhum PDF foi indexado.")
 
     retriever = vectorstore.as_retriever(
-    search_kwargs={
-        "k": 15,
-        "fetch_k": 50,
-        "maximal_marginal_relevance": True
-    }
-)
+        search_kwargs={
+            "k": 15,
+            "fetch_k": 50,
+            "maximal_marginal_relevance": True
+        }
+    )
 
 
     # Usa o método correto do LangChain moderno
