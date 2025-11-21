@@ -2,26 +2,35 @@ from src.llm import get_llm
 from langchain_core.messages import HumanMessage
 
 def process_query(query, vectorstore):
-    """Executa RAG completo: busca + geração."""
+    if vectorstore is None:
+        raise ValueError("Vectorstore está vazio. Nenhum PDF foi indexado.")
 
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
+    try:
+        retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
+    except Exception as e:
+        raise RuntimeError(f"Erro ao criar retriever: {str(e)}")
 
-    # CORRIGIDO: não usar "query: " aqui
-    docs = retriever.get_relevant_documents(query)
+    try:
+        docs = retriever.get_relevant_documents(query)
+    except Exception as e:
+        raise RuntimeError(f"Erro ao buscar documentos no retriever: {str(e)}")
+
+    if not docs:
+        return "Nenhuma resposta encontrada nos PDFs.", []
 
     contexto = ""
     fontes = []
 
     for d in docs:
         texto = d.page_content.replace("passage: ", "")
-        pdf = d.metadata.get("pdf_name")
+        pdf = d.metadata.get("pdf_name", "PDF desconhecido")
 
         contexto += f"\n\n[PDF: {pdf}]\n{texto}"
         fontes.append({"pdf": pdf, "texto": texto})
 
     prompt = f"""
-Você é um modelo RAG. Responda APENAS com informações dos PDFs abaixo.
-Se a resposta não estiver no contexto, diga: 
+Responda APENAS com base nos PDFs abaixo.
+Se não houver resposta, diga:
 "Não encontrei essa informação nos PDFs enviados."
 
 ### CONTEXTO:
