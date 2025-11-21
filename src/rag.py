@@ -8,10 +8,12 @@ def process_query(query, vectorstore):
 
     retriever = vectorstore.as_retriever(
     search_kwargs={
-        "k": 15,                    # Pega mais trechos relevantes
-        "score_threshold": 0.2      # Filtra itens não relacionados
+        "k": 15,
+        "fetch_k": 50,
+        "maximal_marginal_relevance": True
     }
 )
+
 
     # Usa o método correto do LangChain moderno
     try:
