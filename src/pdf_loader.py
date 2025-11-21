@@ -4,8 +4,10 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from src.preprocess import remove_governo_headers, clean_text_block
 from src.vectorstore import build_vectorstore
 
+import streamlit as st
+
+@st.cache_resource
 def load_and_index_pdfs(uploaded_files):
-    """Carrega PDFs em memória e cria um vectorstore FAISS seguro."""
 
     all_docs = []
 
