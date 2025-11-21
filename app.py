@@ -4,7 +4,18 @@ from src.rag import process_query
 
 st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
-st.title("📄 RAG PDF Pro — Perguntas e respostas em PDFs com IA")
+st.title(" RAG PDF Pro — Perguntas e respostas em PDFs com IA")
+st.markdown("""
+### 📘 Sobre o sistema  
+Este aplicativo utiliza Inteligência Artificial para **ler, analisar e responder perguntas** com base no conteúdo real de PDFs enviados por você.  
+Ele funciona com tecnologia *RAG* (Retrieval Augmented Generation), que:
+- 📂 localiza automaticamente trechos relevantes no PDF  
+- 🧠 combina essas informações com um modelo de IA  
+- ✍️ gera respostas precisas, explicações claras ou resumos completos  
+
+Você pode fazer perguntas específicas ou ativar o **Resumo completo do PDF** para obter uma visão geral estruturada.
+""")
+
 
 # ============================
 # ESTADO INICIAL
