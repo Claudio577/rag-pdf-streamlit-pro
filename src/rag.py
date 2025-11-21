@@ -8,7 +8,7 @@ def process_query(query, vectorstore):
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
 
-    # CORREÇÃO AQUI
+    # Usa o método correto do LangChain moderno
     try:
         docs = retriever.invoke(query)
     except Exception as e:
@@ -27,12 +27,25 @@ def process_query(query, vectorstore):
         contexto += f"\n\n[PDF: {pdf}]\n{texto}"
         fontes.append({"pdf": pdf, "texto": texto})
 
+    # -------------------------------
+    # PROMPT CORRIGIDO — ESSENCIAL
+    # -------------------------------
     prompt = f"""
-Responda APENAS com base nos PDFs abaixo.
-Se não houver resposta, diga:
-"Não encontrei essa informação nos PDFs enviados."
+Você é um assistente RAG. Use APENAS o conteúdo dos PDFs abaixo
+para responder à pergunta do usuário.
 
-### CONTEXTO:
+Você pode:
+- Resumir o conteúdo
+- Reescrever com outras palavras
+- Explicar do que o PDF trata
+- Extrair ideias principais
+- Sintetizar informações do texto
+
+NÃO diga "Não encontrei essa informação" se o PDF contiver qualquer fato relacionado.
+
+Apenas diga isso caso REALMENTE não exista nada no contexto que ajude.
+
+### CONTEXTO (trechos dos PDFs):
 {contexto}
 
 ### PERGUNTA:
@@ -40,6 +53,7 @@ Se não houver resposta, diga:
 
 ### RESPOSTA:
 """
+    # -------------------------------
 
     resposta = get_llm().invoke([HumanMessage(content=prompt)])
     return resposta.content, fontes
