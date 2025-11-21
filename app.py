@@ -4,28 +4,26 @@ from src.rag import process_query
 
 st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
-# ============================
-# DESCRIÇÃO
-# ============================
-
+# -------------------------------------------------------
+# ESTILOS (deixa tudo mais bonito)
+# -------------------------------------------------------
 st.markdown("""
-### 📘 O que este sistema faz
+<style>
+    .main-title { font-size: 32px; font-weight: 700; margin-top: 10px; }
+    .section-title { font-size: 22px; font-weight: 600; margin-top: 30px; }
+    .response-box {
+        padding: 20px;
+        border-radius: 10px;
+        background-color: #f7f7f7;
+        border: 1px solid #ddd;
+        margin-top: 10px;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-Este aplicativo utiliza **Inteligência Artificial + LangChain moderno** para analisar PDFs e responder perguntas com base no conteúdo real dos documentos.
-
-Ele utiliza:
-- FAISS + embeddings
-- GPT-4o-mini
-- RAG profissional
-- Resumo completo do PDF com 1 clique
-
-Ele **não inventa informações**: responde somente com base no PDF carregado.
-""")
-
-# ============================
-# ESTADO
-# ============================
-
+# -------------------------------------------------------
+# ESTADOS
+# -------------------------------------------------------
 if "vectorstore" not in st.session_state:
     st.session_state.vectorstore = None
 
@@ -36,10 +34,9 @@ if "resumo_pdf" not in st.session_state:
     st.session_state.resumo_pdf = None
 
 
-# ============================
-# UPLOAD
-# ============================
-
+# -------------------------------------------------------
+# SIDEBAR
+# -------------------------------------------------------
 st.sidebar.header("📁 Carregar PDFs")
 
 uploaded_files = st.sidebar.file_uploader(
@@ -51,17 +48,14 @@ uploaded_files = st.sidebar.file_uploader(
 if uploaded_files:
     st.session_state.pdf_bytes = [f.getvalue() for f in uploaded_files]
 
-    with st.spinner("Processando e indexando PDFs..."):
+    with st.spinner("Processando PDFs..."):
         st.session_state.vectorstore = load_and_index_pdfs(st.session_state.pdf_bytes)
 
-    st.success("PDFs processados com sucesso!")
-
-
-# ============================
-# BOTÃO DE RESUMO COMPLETO
-# ============================
+    st.sidebar.success("PDFs carregados com sucesso!")
 
 st.sidebar.markdown("---")
+
+# BOTÃO RESUMO COMPLETO
 if st.sidebar.button("📄 Gerar resumo completo do PDF"):
     if not st.session_state.vectorstore:
         st.sidebar.error("Nenhum PDF carregado.")
@@ -69,29 +63,49 @@ if st.sidebar.button("📄 Gerar resumo completo do PDF"):
         resumo, fontes = process_query("RESUMO_COMPLETO_PDF", st.session_state.vectorstore)
         st.session_state.resumo_pdf = (resumo, fontes)
 
+# -------------------------------------------------------
+# ÁREA PRINCIPAL
+# -------------------------------------------------------
 
-# ============================
-# MOSTRAR RESUMO LOGO ABAIXO DO BOTÃO
-# ============================
+st.markdown("<div class='main-title'>📄 RAG PDF Pro — Perguntas e Respostas Inteligentes</div>", unsafe_allow_html=True)
 
+# Explicação
+st.markdown("""
+Este sistema usa **RAG + LangChain moderno** para analisar PDFs
+e responder perguntas com total precisão, sem inventar informações.
+
+Ideal para:
+- Portarias  
+- Resoluções  
+- Leis  
+- Documentos técnicos  
+- Contratos  
+- Regimentos  
+""")
+
+# -------------------------------------------------------
+# MOSTRAR RESUMO (SE EXISTIR)
+# -------------------------------------------------------
 if st.session_state.resumo_pdf:
     resumo, fontes = st.session_state.resumo_pdf
 
-    st.subheader("🧠 Resumo completo do PDF")
-    st.write(resumo)
+    st.markdown("<div class='section-title'>📘 Resumo completo do PDF</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='response-box'>{resumo}</div>", unsafe_allow_html=True)
 
-    st.subheader("📌 Fontes utilizadas")
+    st.markdown("<div class='section-title'>📌 Fontes utilizadas</div>", unsafe_allow_html=True)
     for f in fontes:
-        st.write(f"**{f['pdf']}**")
-        st.write(f["texto"] + "\n---")
+        st.markdown(f"""
+        **{f['pdf']}**  
+        <div class='response-box'>{f['texto']}</div>
+        """, unsafe_allow_html=True)
 
+    st.markdown("---")
 
-# ============================
-# PERGUNTA NORMAL
-# ============================
-
-st.markdown("---")
-pergunta = st.text_input("🔎 Pergunta sobre os PDFs:")
+# -------------------------------------------------------
+# PERGUNTA
+# -------------------------------------------------------
+st.markdown("<div class='section-title'>🔎 Pergunta sobre os PDFs</div>", unsafe_allow_html=True)
+pergunta = st.text_input("Digite sua pergunta:")
 
 if st.button("Enviar pergunta"):
     if not st.session_state.vectorstore:
@@ -99,10 +113,12 @@ if st.button("Enviar pergunta"):
     else:
         resposta, fontes = process_query(pergunta, st.session_state.vectorstore)
 
-        st.subheader("🧠 Resposta")
-        st.write(resposta)
+        st.markdown("<div class='section-title'>🧠 Resposta</div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='response-box'>{resposta}</div>", unsafe_allow_html=True)
 
-        st.subheader("📌 Fontes utilizadas")
+        st.markdown("<div class='section-title'>📌 Fontes utilizadas</div>", unsafe_allow_html=True)
         for f in fontes:
-            st.write(f"**{f['pdf']}**")
-            st.write(f["texto"] + "\n---")
+            st.markdown(f"""
+            **{f['pdf']}**  
+            <div class='response-box'>{f['texto']}</div>
+            """, unsafe_allow_html=True)
