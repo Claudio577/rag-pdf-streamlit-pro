@@ -14,7 +14,6 @@ def process_query(query, vectorstore):
         }
     )
 
-
     # Usa o método correto do LangChain moderno
     try:
         docs = retriever.invoke(query)
@@ -34,7 +33,8 @@ def process_query(query, vectorstore):
         contexto += f"\n\n[PDF: {pdf}]\n{texto}"
         fontes.append({"pdf": pdf, "texto": texto})
 
-   prompt = f"""
+    # PROMPT PROFISSIONAL
+    prompt = f"""
 Você é um assistente RAG especializado em leitura de documentos oficiais, jurídicos e administrativos.
 
 Use APENAS os trechos fornecidos no CONTEXTO para responder.  
@@ -60,8 +60,6 @@ IMPORTANTE:
 
 ### SUA RESPOSTA (clara, completa e baseada nos trechos acima):
 """
-
-    # -------------------------------
 
     resposta = get_llm().invoke([HumanMessage(content=prompt)])
     return resposta.content, fontes
