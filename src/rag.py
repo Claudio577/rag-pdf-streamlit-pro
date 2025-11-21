@@ -2,16 +2,15 @@ from src.llm import get_llm
 from langchain_core.messages import HumanMessage
 
 def process_query(query, vectorstore):
+
     if vectorstore is None:
         raise ValueError("Vectorstore está vazio. Nenhum PDF foi indexado.")
 
-    try:
-        retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
-    except Exception as e:
-        raise RuntimeError(f"Erro ao criar retriever: {str(e)}")
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 8})
 
+    # CORREÇÃO AQUI
     try:
-        docs = retriever.get_relevant_documents(query)
+        docs = retriever.invoke(query)
     except Exception as e:
         raise RuntimeError(f"Erro ao buscar documentos no retriever: {str(e)}")
 
@@ -43,5 +42,4 @@ Se não houver resposta, diga:
 """
 
     resposta = get_llm().invoke([HumanMessage(content=prompt)])
-
     return resposta.content, fontes
