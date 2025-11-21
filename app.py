@@ -6,14 +6,19 @@ st.set_page_config(page_title="RAG PDF Pro", layout="wide")
 
 st.title("📄 RAG PDF Pro — Perguntas e respostas em PDFs com IA")
 
-# Estado inicial
+# ============================
+# ESTADO INICIAL
+# ============================
 if "vectorstore" not in st.session_state:
     st.session_state.vectorstore = None
 
 if "pdf_bytes" not in st.session_state:
     st.session_state.pdf_bytes = []
 
-# Sidebar ---------------------------------------------------
+
+# ============================
+# SIDEBAR — UPLOAD
+# ============================
 st.sidebar.header("📁 Carregar PDFs")
 
 uploaded_files = st.sidebar.file_uploader(
@@ -22,12 +27,10 @@ uploaded_files = st.sidebar.file_uploader(
     accept_multiple_files=True
 )
 
-# -----------------------------------------------------------
-# Upload só processa quando realmente há arquivos
-# -----------------------------------------------------------
+# Processar PDFs somente quando realmente houver arquivos
 if uploaded_files is not None and len(uploaded_files) > 0:
 
-    # Guardar PDF como BYTES, não objetos Streamlit
+    # Guardar conteúdo dos PDFs como bytes
     st.session_state.pdf_bytes = [f.getvalue() for f in uploaded_files]
 
     with st.spinner("Processando e indexando PDFs..."):
@@ -37,18 +40,40 @@ if uploaded_files is not None and len(uploaded_files) > 0:
 
 st.markdown("---")
 
-# Pergunta ---------------------------------------------------
+
+# ============================
+# CAMPO DE PERGUNTA
+# ============================
 pergunta = st.text_input("🔎 Pergunta sobre os PDFs:")
 
+# Checkbox para resumo completo
+fazer_resumo = st.checkbox("📄 Fazer resumo completo do PDF")
+
+
+# ============================
+# EXECUTAR CONSULTA
+# ============================
 if st.button("Enviar pergunta"):
     if not st.session_state.vectorstore:
         st.error("Nenhum PDF carregado.")
     else:
+
+        # Caso o usuário queira resumo completo
+        if fazer_resumo:
+            pergunta = (
+                "Faça um resumo completo, detalhado e estruturado do PDF inteiro, "
+                "destacando objetivos, contexto legal, regras, obrigações, prazos, "
+                "responsabilidades e os principais pontos tratados no documento."
+            )
+
+        # Executar RAG
         resposta, fontes = process_query(pergunta, st.session_state.vectorstore)
 
+        # Mostrar resposta
         st.subheader("🧠 Resposta")
         st.write(resposta)
 
+        # Mostrar trechos usados
         st.subheader("📌 Fontes utilizadas")
         for f in fontes:
             st.write(f"**{f['pdf']}**")
